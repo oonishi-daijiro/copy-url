@@ -1,5 +1,4 @@
-const offScreenFilePath = './offscreen.html';
-let offscreenExists = false;
+const offScreenFilePath = 'offscreen.html';
 
 chrome.action.onClicked.addListener(() => {
   (async () => {
@@ -8,7 +7,7 @@ chrome.action.onClicked.addListener(() => {
       lastFocusedWindow: true
     });
 
-    if (!offscreenExists) {
+    if (!(await offscreenExists())) {
       await createOffscreen();
     }
 
@@ -23,11 +22,21 @@ chrome.action.onClicked.addListener(() => {
   })
 })
 
+async function offscreenExists() {
+  const matchedClients = await clients.matchAll();
+  console.log(matchedClients)
+  for (const client of matchedClients) {
+    if (client.url.endsWith(offScreenFilePath)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 async function createOffscreen() {
   await chrome.offscreen.createDocument({
     url: offScreenFilePath,
     reasons: ['CLIPBOARD'],
     justification: 'Required for write to clipboard',
   });
-  offscreenExists = true;
 }
